@@ -1,0 +1,18 @@
+{
+  "name": "coordinadora_scraping_1",
+  "version": "1.0.0",
+  "description": "Intento de automatizar proceso de rastreo de guias",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "scraping",
+    "automation"
+  ],
+  "author": "Vale Riana",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^3.9.2"
+  }
+}
