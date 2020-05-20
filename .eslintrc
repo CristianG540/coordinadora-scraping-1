@@ -1,0 +1,43 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "extends": ["plugin:@typescript-eslint/recommended", "standard"],
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module",
+    "tsconfigRootDir": "./"
+  },
+  "plugins": [
+    "@typescript-eslint" // Let's us override rules below.
+  ],
+  "rules": {
+    "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-explicit-any": 1,
+    "@typescript-eslint/no-inferrable-types": [
+      "warn", {
+        "ignoreParameters": true
+      }
+    ],
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/member-delimiter-style": ["error", { // Prevents us from using any delimiter for interface properties.
+      "multiline": {
+        "delimiter": "none",
+        "requireLast": false
+      },
+      "singleline": {
+        "delimiter": "comma",
+        "requireLast": false
+      }
+    }],
+    "@typescript-eslint/indent": "off", // This is the job of StandardJS, they are competing rules so we turn off the Typescript one.
+    "node/no-unsupported-features/es-syntax": "off", // Allows us to use Import and Export keywords.,
+    "@typescript-eslint/no-empty-function": [ "error",
+      {
+        "allow": [
+          "setters",
+          "getters"
+        ]
+      }
+    ]
+  }
+}
