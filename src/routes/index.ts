@@ -2,16 +2,19 @@ import { Router } from 'express'
 
 // Controllers (route handlers)
 import * as homeController from '../controllers/home'
+import * as scrapController from '../controllers/scrap'
+
 // import * as userController from './controllers/user'
 // import * as apiController from './controllers/api'
 // import * as contactController from './controllers/contact'
 
 const router = Router()
 
-/**
- * Primary app routes.
- */
+// Home
 router.get('/', homeController.index)
+
+// Scrap routes
+router.get('/scrap', scrapController.index)
 
 export default router
 
