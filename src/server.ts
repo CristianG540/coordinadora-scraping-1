@@ -1,14 +1,5 @@
-import errorHandler from 'errorhandler'
-
+import 'module-alias/register'
 import app from './app'
-
-/**
- * Error Handler. Provides full stack
- */
-if (process.env.NODE_ENV === 'development') {
-  // only use in development
-  app.use(errorHandler())
-}
 
 /**
  * Start Express server.

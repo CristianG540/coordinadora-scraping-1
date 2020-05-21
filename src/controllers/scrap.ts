@@ -50,6 +50,7 @@ export const scrapCoordinadora = async (req: Request, res: Response) => {
       guideStatuses
     })
   } else {
+    // next(new HttpException(404, 'Post not found'));
     res.status(404).json({ error: 'you need to provide a guide number' })
   }
 }
