@@ -1,10 +1,22 @@
 import { Request, Response, NextFunction } from 'express'
 import createError from 'http-errors'
-// Exceptions
-import HttpException from '@exceptions/httpException'
+// Utils
+import logger from '@util/logger'
 
 interface ControllerFunction {
   (req: Request, res: Response, next: NextFunction): Promise<void>
+}
+
+const formatError = (err: createError.HttpError) => {
+  const stack = err.stack || ''
+  const errorDetails = {
+    name: err.name || '',
+    message: err.message || '',
+    status: err.status || 500,
+    stackHighlighted: stack.replace(/[a-z_-\d]+.js:\d+:\d+/gi, '<mark>$&</mark>')
+  }
+
+  return errorDetails
 }
 
 /*
@@ -32,10 +44,7 @@ export const catchErrors = (fn: ControllerFunction) => {
   more info about this here: http://i.imgur.com/X4pLH7H.png
 */
 export const notFound = (req: Request, res: Response, next: NextFunction) => {
-  // const err = new HttpException(404, 'Not Found')
-  // next(err)
-  console.log('errorHandler -> notFound 🦄🦄🦄')
-  next(createError(404))
+  next(createError(404, 'Not Found'))
 }
 
 /*
@@ -44,15 +53,10 @@ export const notFound = (req: Request, res: Response, next: NextFunction) => {
   In development we show good error messages so if we hit a syntax error or any other previously un-handled error,
   we can show good info on what happened
 */
-export const developmentErrors = (err: HttpException, req: Request, res: Response, _next: NextFunction) => {
-  console.log('errorHandler -> developmentErrors 🐽🐽🐽')
+export const developmentErrors = (err: createError.HttpError, req: Request, res: Response, _next: NextFunction) => {
+  const errorDetails = formatError(err)
 
-  err.stack = err.stack || ''
-  const errorDetails = {
-    message: err.message,
-    status: err.status,
-    stackHighlighted: err.stack.replace(/[a-z_-\d]+.js:\d+:\d+/gi, '<mark>$&</mark>')
-  }
+  logger.error('errorHandlers -> developmentErrors 🏮🏮🐽: %O', formatError(err))
   res.status(err.status || 500)
   res.format({
     // Based on the `Accept` http header
@@ -68,8 +72,8 @@ export const developmentErrors = (err: HttpException, req: Request, res: Respons
 
   No stacktraces are leaked to user
 */
-export const productionErrors = (err: HttpException, req: Request, res: Response, _next: NextFunction) => {
-  console.log('errorHandler -> productionErrors 🐀🐀🐀')
+export const productionErrors = (err: createError.HttpError, req: Request, res: Response, _next: NextFunction) => {
+  logger.error('errorHandler -> productionErrors 🏮🏮🐀: %O', formatError(err))
   res.status(err.status || 500)
   res.render('error', {
     message: err.message,
