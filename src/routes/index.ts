@@ -11,6 +11,6 @@ router.get('/', homeController.index)
 
 // Scrap routes
 router.get('/scrap', scrapController.index)
-router.get('/scrapCoordinadora/:guide', scrapController.scrapCoordinadora)
+router.get('/scrapCoordinadora', scrapController.scrapCoordinadora)
 
 export default router

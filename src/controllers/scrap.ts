@@ -1,5 +1,6 @@
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import puppeteer from 'puppeteer'
+import GuideBadRequestException from '@exceptions/guideBadRequest.exception'
 
 /**
  * GET /
@@ -11,8 +12,8 @@ export const index = (req: Request, res: Response) => {
   })
 }
 
-export const scrapCoordinadora = async (req: Request, res: Response) => {
-  const guideToTrack = req.params.guide || ''
+export const scrapCoordinadora = async (req: Request, res: Response, next: NextFunction) => {
+  const guideToTrack = (req.query.guide as string) || ''
 
   if (guideToTrack) {
     const COORDINADORA_TRACKING_URL = 'https://www.coordinadora.com/portafolio-de-servicios/servicios-en-linea/rastrear-guias/'
@@ -50,7 +51,6 @@ export const scrapCoordinadora = async (req: Request, res: Response) => {
       guideStatuses
     })
   } else {
-    // next(new HttpException(404, 'Post not found'));
-    res.status(404).json({ error: 'you need to provide a guide number' })
+    next(new GuideBadRequestException())
   }
 }
