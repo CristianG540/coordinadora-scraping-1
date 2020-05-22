@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import puppeteer from 'puppeteer'
+// Utils
+import PuppeteerWrapper from '@util/puppeteerWrapper'
+// Execptions
 import GuideBadRequestException from '@exceptions/guideBadRequest.exception'
 
 /**
@@ -13,34 +16,40 @@ export const index = (req: Request, res: Response) => {
 }
 
 export const scrapCoordinadora = async (req: Request, res: Response, next: NextFunction) => {
-  const guideToTrack = (req.query.guide as string) || ''
+  const guidesToTrackString = (req.query.guides as string) || ''
+  const guidesToTrack = guidesToTrackString.split(',')
 
-  if (guideToTrack) {
+  if (guidesToTrack) {
     const COORDINADORA_TRACKING_URL = 'https://www.coordinadora.com/portafolio-de-servicios/servicios-en-linea/rastrear-guias/'
     const TRACK_GUIDE_BTN = '#frm_consultar_guia > div > button'
     const GUIDES_TEXTBOX = '#coor_guia'
     const GUIDE_STATUSES = '.estado_guia'
     const RESULTS_TABLE = (row: number) => `div.guia-data.dot1 > table > tbody > tr:nth-child(${row}) > td.guia-val`
-    const getResult = (row: number, page: puppeteer.Page) => page.$eval(RESULTS_TABLE(row), e => e.innerHTML)
+    const getResultFromTable = (row: number, page: puppeteer.Page) => page.$eval(RESULTS_TABLE(row), e => e.innerHTML)
 
-    const browser = await puppeteer.launch({ headless: false })
-    const page = await browser.newPage()
-    /**
-     * networkidle0 comes handy for SPAs that load resources with fetch requests.
-     * networkidle2 comes handy for pages that do long-polling or any other side activity.
-     */
-    await page.goto(COORDINADORA_TRACKING_URL, { waitUntil: 'networkidle2' })
+    /* **** Puppeteer init ************************************************/
+    const puppeteerWrapper = new PuppeteerWrapper()
+    const { page } = await puppeteerWrapper.startBrowser()
+
+    /* **** Puppeteer track guides on coordinadora **********************************/
+    await puppeteerWrapper.goTo(COORDINADORA_TRACKING_URL)
     await page.focus(GUIDES_TEXTBOX)
-    await page.type(GUIDES_TEXTBOX, guideToTrack)
-    await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle2' }), // The promise resolves after navigation has finished
-      page.click(TRACK_GUIDE_BTN) // Clicking the link will indirectly cause a navigation
-    ])
+    for (const guide of guidesToTrack) {
+      await page.type(GUIDES_TEXTBOX, guide)
+      await page.keyboard.press('Enter')
+    }
+    await puppeteerWrapper.clickSubmitButtonAndWait(TRACK_GUIDE_BTN)
 
-    const origin = await getResult(1, page)
-    const destination = await getResult(2, page)
-    const status = await getResult(3, page)
-    const lastStatusDate = await getResult(4, page)
+    /* **** Puppeteer retrieve information from coordinadora **********************************/
+
+    // const elements = await puppeteerWrapper.getElementByText('Guia no localizada', 'div')
+    // console.log('scrapCoordinadora -> elements 🦒🦒🦒', elements.length)
+    // await elements[0].screenshot({ path: '/images/gatoGatil.png' })
+
+    const origin = await getResultFromTable(1, page)
+    const destination = await getResultFromTable(2, page)
+    const status = await getResultFromTable(3, page)
+    const lastStatusDate = await getResultFromTable(4, page)
     const guideStatuses = await page.$$eval(GUIDE_STATUSES, divs => divs.map((div: HTMLElement) => div.innerText))
 
     res.json({
