@@ -5,7 +5,7 @@ class PuppeteerWrapper {
   page: puppeteer.Page;
 
   async startBrowser () {
-    this.browser = await puppeteer.launch({ headless: false })
+    this.browser = await puppeteer.launch({ headless: true })
     this.page = await this.browser.newPage()
 
     return {
@@ -19,11 +19,11 @@ class PuppeteerWrapper {
      * networkidle0 comes handy for SPAs that load resources with fetch requests.
      * networkidle2 comes handy for pages that do long-polling or any other side activity.
      */
-    await this.page.goto(pageUrlToScrap, { waitUntil: 'networkidle2' })
+    return await this.page.goto(pageUrlToScrap, { waitUntil: 'networkidle2' })
   }
 
   async clickSubmitButtonAndWait (buttonSelector: string) {
-    await Promise.all([
+    return await Promise.all([
       this.page.waitForNavigation({ waitUntil: 'networkidle2' }), // The promise resolves after navigation has finished
       this.page.click(buttonSelector) // Clicking the button/link will indirectly cause a navigation
     ])
@@ -31,6 +31,10 @@ class PuppeteerWrapper {
 
   async getElementByText (text: string, element: string) {
     return await this.page.$x(`//${element}[contains(., '${text}')]`)
+  }
+
+  async close () {
+    return await this.browser.close()
   }
 }
 

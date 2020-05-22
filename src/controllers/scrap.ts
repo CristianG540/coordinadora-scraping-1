@@ -52,6 +52,8 @@ export const scrapCoordinadora = async (req: Request, res: Response, next: NextF
     const lastStatusDate = await getResultFromTable(4, page)
     const guideStatuses = await page.$$eval(GUIDE_STATUSES, divs => divs.map((div: HTMLElement) => div.innerText))
 
+    await puppeteerWrapper.close()
+
     res.json({
       origin,
       destination,
