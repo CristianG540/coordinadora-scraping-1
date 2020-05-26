@@ -5,7 +5,7 @@ class PuppeteerWrapper {
   page: puppeteer.Page;
 
   async startBrowser () {
-    this.browser = await puppeteer.launch({ headless: true })
+    this.browser = await puppeteer.launch({ headless: false })
     this.page = await this.browser.newPage()
 
     return {
