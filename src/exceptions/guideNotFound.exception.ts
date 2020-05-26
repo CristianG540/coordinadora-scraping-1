@@ -2,9 +2,9 @@ import createError from 'http-errors'
 
 class GuideNotFoundException extends createError.NotFound {
   constructor (
-    id: number
+    ids: string
   ) {
-    super(`Guide with number ${id} not found`)
+    super(`We couldn't find the guide or guides you entered: ${ids}`)
   }
 }
 
