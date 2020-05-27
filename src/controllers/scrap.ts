@@ -52,7 +52,20 @@ export const trackGuides = async (req: Request, res: Response, next: NextFunctio
     const destination = await getResultFromTable(2, page)
     const status = await getResultFromTable(3, page)
     const lastStatusDate = await getResultFromTable(4, page)
-    const guideStatuses = await page.$$eval(GUIDE_STATUSES, divs => divs.map((div: HTMLElement) => div.innerText))
+    const guideStatuses = await page.$$eval(GUIDE_STATUSES, divs => divs.map((div: HTMLElement) => {
+      const getElementInnerText = (element: HTMLElement, cssSelector: string) => (
+        (element.querySelector(cssSelector) as HTMLElement).innerText
+      )
+
+      return {
+        status: getElementInnerText(div, '.desc-estado'),
+        date: {
+          day: getElementInnerText(div, '.desc-date > .dateNumbers'),
+          month: getElementInnerText(div, '.desc-date > .dateChars > .dateCharsMonth'),
+          year: getElementInnerText(div, '.desc-date > .dateChars > .dateCharsYear')
+        }
+      }
+    }))
 
     // await puppeteerWrapper.close()
 
