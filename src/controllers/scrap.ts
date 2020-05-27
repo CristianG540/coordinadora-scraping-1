@@ -25,8 +25,19 @@ export const trackGuides = async (req: Request, res: Response, next: NextFunctio
     const GUIDES_TEXTBOX = '#coor_guia'
     const GUIDE_STATUSES = '.estado_guia'
     const GUIDE_NOT_FOUND_STRING = 'Guia no localizada'
-    const RESULTS_TABLE = (row: number) => `div.guia-data.dot1 > table > tbody > tr:nth-child(${row}) > td.guia-val`
-    const getResultFromTable = (row: number, page: puppeteer.Page) => page.$eval(RESULTS_TABLE(row), e => e.innerHTML)
+
+    const cssNumericSelectorOnUnicode = (prefix: string, selector: string) => {
+      const selectorWithoutFirstNumber = selector.split('').slice(1).join('')
+      const unicodeSelector = `${prefix}\\3${selector[0]} ${selectorWithoutFirstNumber}`
+
+      return unicodeSelector
+    }
+    const resultTableSelector = (row: number, guideId = '') => {
+      return (guideId)
+        ? `${cssNumericSelectorOnUnicode('#', guideId)} .guia-data.dot1 > table > tbody > tr:nth-child(${row}) > td.guia-val`
+        : `.guia-data.dot1 > table > tbody > tr:nth-child(${row}) > td.guia-val`
+    }
+    const getResultFromTable = (page: puppeteer.Page, resultsTableSelector: string) => page.$eval(resultsTableSelector, e => e.innerHTML)
 
     /* **** Puppeteer init ************************************************/
     const puppeteerWrapper = new PuppeteerWrapper()
@@ -48,34 +59,84 @@ export const trackGuides = async (req: Request, res: Response, next: NextFunctio
     }
 
     /* **** Puppeteer retrieve information from coordinadora **********************************/
-    const origin = await getResultFromTable(1, page)
-    const destination = await getResultFromTable(2, page)
-    const status = await getResultFromTable(3, page)
-    const lastStatusDate = await getResultFromTable(4, page)
-    const guideStatuses = await page.$$eval(GUIDE_STATUSES, divs => divs.map((div: HTMLElement) => {
-      const getElementInnerText = (element: HTMLElement, cssSelector: string) => (
-        (element.querySelector(cssSelector) as HTMLElement).innerText
-      )
 
-      return {
-        status: getElementInnerText(div, '.desc-estado'),
-        date: {
-          day: getElementInnerText(div, '.desc-date > .dateNumbers'),
-          month: getElementInnerText(div, '.desc-date > .dateChars > .dateCharsMonth'),
-          year: getElementInnerText(div, '.desc-date > .dateChars > .dateCharsYear')
+    if (guidesToTrack.length <= 1) {
+      const origin = await getResultFromTable(page, resultTableSelector(1))
+      const destination = await getResultFromTable(page, resultTableSelector(2))
+      const status = await getResultFromTable(page, resultTableSelector(3))
+      const lastStatusDate = await getResultFromTable(page, resultTableSelector(4))
+      const guideStatuses = await page.$$eval(GUIDE_STATUSES, divs => divs.map((div: HTMLElement) => {
+        const getElementInnerText = (element: HTMLElement, cssSelector: string) => {
+          try {
+            return (element.querySelector(cssSelector) as HTMLElement).innerText
+          } catch (error) {
+            return ''
+          }
         }
+
+        return {
+          status: getElementInnerText(div, '.desc-estado'),
+          aditionalInfo: getElementInnerText(div, '.panel > .panel-body'),
+          date: {
+            day: getElementInnerText(div, '.desc-date > .dateNumbers'),
+            month: getElementInnerText(div, '.desc-date > .dateChars > .dateCharsMonth'),
+            year: getElementInnerText(div, '.desc-date > .dateChars > .dateCharsYear')
+          }
+        }
+      }))
+
+      await puppeteerWrapper.close()
+
+      res.json({
+        guide: guidesToTrack[0],
+        origin,
+        destination,
+        status,
+        lastStatusDate,
+        guideStatuses
+      })
+    } else {
+      const guidesData = []
+
+      for (const guide of guidesToTrack) {
+        const origin = await getResultFromTable(page, resultTableSelector(1, guide))
+        const destination = await getResultFromTable(page, resultTableSelector(2, guide))
+        const status = await getResultFromTable(page, resultTableSelector(3, guide))
+        const lastStatusDate = await getResultFromTable(page, resultTableSelector(4, guide))
+        const guideStatuses = await page.$$eval(`${cssNumericSelectorOnUnicode('#', guide)} ${GUIDE_STATUSES}`, divs => divs.map((div: HTMLElement) => {
+          const getElementInnerText = (element: HTMLElement, cssSelector: string) => {
+            try {
+              return (element.querySelector(cssSelector) as HTMLElement).innerText
+            } catch (error) {
+              return ''
+            }
+          }
+
+          return {
+            status: getElementInnerText(div, '.desc-estado'),
+            aditionalInfo: getElementInnerText(div, '.panel > .panel-body'),
+            date: {
+              day: getElementInnerText(div, '.desc-date > .dateNumbers'),
+              month: getElementInnerText(div, '.desc-date > .dateChars > .dateCharsMonth'),
+              year: getElementInnerText(div, '.desc-date > .dateChars > .dateCharsYear')
+            }
+          }
+        }))
+
+        guidesData.push({
+          guide,
+          origin,
+          destination,
+          status,
+          lastStatusDate,
+          guideStatuses
+        })
       }
-    }))
 
-    // await puppeteerWrapper.close()
+      await puppeteerWrapper.close()
 
-    res.json({
-      origin,
-      destination,
-      status,
-      lastStatusDate,
-      guideStatuses
-    })
+      res.json(guidesData)
+    }
   } else {
     next(new GuideBadRequestException())
   }
