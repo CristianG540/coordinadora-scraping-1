@@ -1,8 +1,8 @@
 import { Router } from 'express'
 // Controllers (route handlers)
-import * as scrapController from '@controllers/scrap'
+import * as scrapController from '@controllers/scrap.controller'
 // Handlers
-import { catchAsyncErrors } from '@handlers/errorHandlers'
+import { catchAsyncErrors } from '@handlers/error.handler'
 
 const router = Router()
 
