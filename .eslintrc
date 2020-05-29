@@ -10,6 +10,8 @@
     "@typescript-eslint" // Let's us override rules below.
   ],
   "rules": {
+    "node/no-unsupported-features/es-syntax": "off", // Allows us to use Import and Export keywords.,
+    "no-useless-constructor": "off",
     "@typescript-eslint/no-useless-constructor": "off",
     "@typescript-eslint/no-var-requires": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
@@ -31,7 +33,6 @@
       }
     }],
     "@typescript-eslint/indent": "off", // This is the job of StandardJS, they are competing rules so we turn off the Typescript one.
-    "node/no-unsupported-features/es-syntax": "off", // Allows us to use Import and Export keywords.,
     "@typescript-eslint/no-empty-function": [ "error",
       {
         "allow": [

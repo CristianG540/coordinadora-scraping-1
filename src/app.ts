@@ -9,7 +9,7 @@ import morgan from 'morgan'
 // Routes
 import routes from '@routes/index'
 // Handlers
-import { notFound, developmentErrors, productionErrors } from '@handlers/errorHandlers'
+import { notFound, developmentErrors, productionErrors } from '@handlers/error.handler'
 // Utils
 import { SESSION_SECRET } from '@util/enviroment'
 

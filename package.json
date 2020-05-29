@@ -22,11 +22,13 @@
   },
   "_moduleAliases": {
     "@root": ".",
+    "@constants": "dist/constants",
     "@controllers": "dist/controllers",
     "@exceptions": "dist/exceptions",
     "@handlers": "dist/handlers",
     "@models": "dist/models",
     "@routes": "dist/routes",
+    "@services": "dist/services",
     "@util": "dist/util"
   },
   "keywords": [

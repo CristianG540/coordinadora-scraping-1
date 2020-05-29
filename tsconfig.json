@@ -16,11 +16,13 @@
         "node_modules/*",
         "src/types/*"
       ],
+      "@constants/*": ["src/constants/*"],
       "@controllers/*": ["src/controllers/*"],
       "@exceptions/*": ["src/exceptions/*"],
       "@handlers/*": ["src/handlers/*"],
       "@models/*": ["src/models/*"],
       "@routes/*": ["src/routes/*"],
+      "@services/*": ["src/services/*"],
       "@util/*": ["src/util/*"]
     },
     "typeRoots": [
